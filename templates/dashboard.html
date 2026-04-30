@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuthPortal — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #0f0e0d;
+      --paper:  #faf8f4;
+      --accent: #c84b31;
+      --muted:  #8a8070;
+      --border: #e2ddd5;
+      --surface:#fff;
+      --mono:   'DM Mono', monospace;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .wordmark {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+    }
+    .wordmark span { color: var(--accent); }
+
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+    }
+    .nav-name { font-size: .875rem; font-weight: 500; }
+
+    .btn-logout {
+      font-family: 'DM Sans', sans-serif;
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      padding: .4rem .9rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: color .2s, border-color .2s;
+    }
+    .btn-logout:hover { color: var(--ink); border-color: #aaa; }
+
+    /* ── Main ── */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 4rem;
+    }
+
+    .section-label {
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .65rem;
+    }
+
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.9rem;
+      letter-spacing: -.025em;
+      margin-bottom: 1.6rem;
+    }
+
+    /* ── Profile card ── */
+    .profile-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.8rem;
+      align-items: start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.8rem;
+      margin-bottom: 3rem;
+      animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--border);
+      display: block;
+    }
+    .profile-avatar-placeholder {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: var(--muted);
+    }
+
+    .profile-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      letter-spacing: -.02em;
+      margin-bottom: .25rem;
+    }
+    .profile-email {
+      font-size: .875rem;
+      color: var(--muted);
+      margin-bottom: 1.1rem;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: .65rem;
+    }
+    .field {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .6rem .85rem;
+    }
+    .field-key {
+      font-size: .65rem;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .2rem;
+    }
+    .field-val {
+      font-family: var(--mono);
+      font-size: .8rem;
+      word-break: break-all;
+    }
+    .field-val.empty { color: var(--muted); font-style: italic; font-family: 'DM Sans', sans-serif; }
+
+    /* ── Users table ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      animation: fadeUp .55s .1s cubic-bezier(.22,1,.36,1) both;
+    }
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .table-header h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      letter-spacing: -.02em;
+    }
+    .badge {
+      font-size: .7rem;
+      font-weight: 500;
+      background: #f2ede7;
+      color: var(--muted);
+      border-radius: 20px;
+      padding: .2rem .65rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+    }
+    thead tr { background: #faf8f4; }
+    th {
+      text-align: left;
+      padding: .7rem 1.1rem;
+      font-size: .65rem;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: .8rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #faf8f4; }
+
+    .user-cell { display: flex; align-items: center; gap: .7rem; }
+    .user-cell img {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid var(--border);
+    }
+    .user-cell .initials {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 500; color: var(--muted);
+    }
+
+    .mono { font-family: var(--mono); color: var(--muted); font-size: .75rem; }
+    .you-badge {
+      font-size: .62rem;
+      font-weight: 500;
+      background: #fde8e3;
+      color: var(--accent);
+      border-radius: 20px;
+      padding: .15rem .5rem;
+      margin-left: .4rem;
+    }
+
+    #loading { padding: 2rem; text-align: center; color: var(--muted); font-size: .875rem; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="wordmark">Auth<span>Portal</span></div>
+    <div class="nav-right">
+      {% if user.picture %}
+        <img src="{{ user.picture }}" alt="avatar" class="avatar">
+      {% endif %}
+      <span class="nav-name">{{ user.given_name or user.name }}</span>
+      <a href="/logout" class="btn-logout">Sign out</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ── Profile section ── -->
+    <p class="section-label">Signed-in account</p>
+    <h2>Your Google profile</h2>
+
+    <div class="profile-card">
+      {% if user.picture %}
+        <img src="{{ user.picture }}" alt="{{ user.name }}" class="profile-avatar">
+      {% else %}
+        <div class="profile-avatar-placeholder">👤</div>
+      {% endif %}
+
+      <div>
+        <div class="profile-name">{{ user.name or '—' }}</div>
+        <div class="profile-email">{{ user.email }}</div>
+
+        <div class="fields">
+          {% set display_fields = [
+            ('id',          'DB row ID'),
+            ('google_id',   'Google sub (ID)'),
+            ('email',       'Email'),
+            ('name',        'Full name'),
+            ('given_name',  'Given name'),
+            ('family_name', 'Family name'),
+            ('locale',      'Locale'),
+            ('created_at',  'Created at'),
+            ('last_login',  'Last login'),
+          ] %}
+          {% for key, label in display_fields %}
+            <div class="field">
+              <div class="field-key">{{ label }}</div>
+              <div class="field-val {% if not user[key] %}empty{% endif %}">
+                {{ user[key] if user[key] else 'not provided' }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Users table ── -->
+    <p class="section-label">Database</p>
+    <h2>Registered users</h2>
+
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>users table</h3>
+        <span class="badge" id="count-badge">loading…</span>
+      </div>
+      <div id="table-container">
+        <div id="loading">Fetching records…</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const ME = "{{ user.google_id }}";
+
+    async function loadUsers() {
+      try {
+        const res  = await fetch("/api/users");
+        const data = await res.json();
+
+        document.getElementById("count-badge").textContent =
+          `${data.length} user${data.length !== 1 ? "s" : ""}`;
+
+        const tbody = data.map(u => {
+          const isMe = u.google_id === ME;
+          const initials = ((u.given_name?.[0] || "") + (u.family_name?.[0] || "")) || "?";
+          const avatarHtml = u.picture
+            ? `<img src="${u.picture}" alt="${escHtml(u.name)}">`
+            : `<div class="initials">${escHtml(initials)}</div>`;
+          const youTag = isMe ? `<span class="you-badge">you</span>` : "";
+
+          return `<tr>
+            <td>${u.id}</td>
+            <td>
+              <div class="user-cell">
+                ${avatarHtml}
+                <span>${escHtml(u.name || "—")}${youTag}</span>
+              </div>
+            </td>
+            <td>${escHtml(u.email)}</td>
+            <td class="mono">${escHtml(u.given_name || "—")}</td>
+            <td class="mono">${escHtml(u.locale || "—")}</td>
+            <td class="mono">${escHtml(u.created_at?.slice(0, 19) || "—")}</td>
+            <td class="mono">${escHtml(u.last_login?.slice(0, 19) || "—")}</td>
+          </tr>`;
+        }).join("");
+
+        document.getElementById("table-container").innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Given name</th>
+                <th>Locale</th>
+                <th>Created</th>
+                <th>Last login</th>
+              </tr>
+            </thead>
+            <tbody>${tbody}</tbody>
+          </table>`;
+      } catch (err) {
+        document.getElementById("table-container").innerHTML =
+          `<div id="loading">Failed to load users.</div>`;
+      }
+    }
+
+    function escHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
