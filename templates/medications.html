@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+{% block title %}Medications — MedMinder{% endblock %}
+
+{% block extra_head %}
+<style>
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  /* Med cards grid */
+  .meds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .med-card {
+    background: var(--warm-white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .med-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+  .med-card-top {
+    padding: 1.25rem 1.25rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .med-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .med-card-info { flex: 1; min-width: 0; }
+
+  .med-card-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--charcoal);
+  }
+
+  .med-card-dosage {
+    font-size: 0.825rem;
+    color: var(--slate);
+    margin-top: 0.2rem;
+  }
+
+  .med-card-notes {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    line-height: 1.4;
+  }
+
+  .med-card-schedules {
+    border-top: 1px solid var(--border);
+    padding: 0.9rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .sched-pill {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.775rem;
+    color: var(--slate);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .med-card-actions {
+    border-top: 1px solid var(--border);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  /* Color picker swatches */
+  .color-swatches {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .color-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.selected { border-color: var(--charcoal); }
+
+  /* Schedule builder */
+  .schedule-builder { margin-top: 1rem; }
+
+  .schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+    background: var(--cream);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.75rem;
+  }
+
+  .schedule-row input[type=time] { flex: 0 0 120px; }
+  .schedule-row input[type=text] { flex: 1; }
+
+  .day-checks {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .day-check {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .day-check input { margin: 0; }
+  .day-check label {
+    font-size: 0.7rem;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--slate);
+    font-weight: 400;
+  }
+
+  .add-schedule-btn {
+    background: none;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+    width: 100%;
+    cursor: pointer;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+
+  .add-schedule-btn:hover { border-color: var(--sage); color: var(--sage-dark); }
+
+  .remove-sched { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; }
+  .remove-sched:hover { color: #C0392B; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Medications</h1>
+  <button class="btn btn-primary" onclick="openModal('medModal'); resetForm()">+ Add Medication</button>
+</div>
+
+<div id="medsContainer">
+  <div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-backdrop" id="medModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Medication</div>
+      <button class="modal-close" onclick="closeModal('medModal')">×</button>
+    </div>
+
+    <div id="medForm">
+      <input type="hidden" id="medId">
+
+      <div class="form-group">
+        <label>Medication Name *</label>
+        <input type="text" id="medName" placeholder="e.g. Lisinopril">
+      </div>
+
+      <div class="form-group">
+        <label>Dosage</label>
+        <input type="text" id="medDosage" placeholder="e.g. 10mg, 1 tablet">
+      </div>
+
+      <div class="form-group">
+        <label>Color</label>
+        <div class="color-swatches" id="colorSwatches"></div>
+        <input type="hidden" id="medColor" value="#7BAF8E">
+      </div>
+
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="medNotes" placeholder="e.g. Take with food, avoid grapefruit…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Schedule</label>
+        <div class="schedule-builder" id="scheduleBuilder"></div>
+        <button class="add-schedule-btn" type="button" onclick="addScheduleRow()">+ Add reminder time</button>
+      </div>
+
+      <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1.5rem;">
+        <button class="btn btn-outline" onclick="closeModal('medModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveMed()">Save Medication</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete modal -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal" style="max-width:380px; text-align:center;">
+    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🗑️</div>
+    <div class="modal-title" style="margin-bottom:0.5rem;">Remove Medication?</div>
+    <p style="color:var(--slate); font-size:0.9rem; margin-bottom:1.5rem;">This will archive the medication and its history. You can't undo this.</p>
+    <input type="hidden" id="deleteId">
+    <div style="display:flex; gap:0.75rem; justify-content:center;">
+      <button class="btn btn-outline" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Yes, remove</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const COLORS = ['#7BAF8E','#5B8DB8','#C0826B','#9B7EC8','#C8AA5A','#6BAAB5','#C87E7E','#7EB57E','#B5836B','#8E8EB5'];
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  let currentMeds = [];
+
+  function initColorSwatches(selectedColor) {
+    const wrap = document.getElementById('colorSwatches');
+    wrap.innerHTML = '';
+    COLORS.forEach(c => {
+      const s = document.createElement('div');
+      s.className = 'color-swatch' + (c === selectedColor ? ' selected' : '');
+      s.style.background = c;
+      s.onclick = () => {
+        wrap.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('selected'));
+        s.classList.add('selected');
+        document.getElementById('medColor').value = c;
+      };
+      wrap.appendChild(s);
+    });
+  }
+
+  function addScheduleRow(time='', label='', days=[0,1,2,3,4,5,6]) {
+    const builder = document.getElementById('scheduleBuilder');
+    const row = document.createElement('div');
+    row.className = 'schedule-row-wrap';
+    const dayChecks = DAYS.map((d, i) =>
+      `<div class="day-check"><input type="checkbox" ${days.includes(i)?'checked':''} value="${i}"><label>${d}</label></div>`
+    ).join('');
+    row.innerHTML = `
+      <div class="schedule-row">
+        <input type="time" value="${time || '08:00'}" class="sched-time">
+        <input type="text" placeholder="Label (optional)" value="${label}" class="sched-label">
+        <button class="remove-sched" onclick="this.closest('.schedule-row-wrap').remove()">×</button>
+      </div>
+      <div class="day-checks">${dayChecks}</div>
+    `;
+    builder.appendChild(row);
+  }
+
+  function getSchedules() {
+    return [...document.querySelectorAll('.schedule-row-wrap')].map(wrap => {
+      const time = wrap.querySelector('.sched-time').value;
+      const label = wrap.querySelector('.sched-label').value;
+      const days = [...wrap.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      return { time_of_day: time, label, days_of_week: days.join(',') };
+    });
+  }
+
+  function resetForm() {
+    document.getElementById('medId').value = '';
+    document.getElementById('medName').value = '';
+    document.getElementById('medDosage').value = '';
+    document.getElementById('medNotes').value = '';
+    document.getElementById('medColor').value = '#7BAF8E';
+    document.getElementById('scheduleBuilder').innerHTML = '';
+    document.getElementById('modalTitle').textContent = 'Add Medication';
+    initColorSwatches('#7BAF8E');
+    addScheduleRow('08:00', '', [0,1,2,3,4,5,6]);
+  }
+
+  function editMed(med) {
+    document.getElementById('medId').value = med.id;
+    document.getElementById('medName').value = med.name;
+    document.getElementById('medDosage').value = med.dosage || '';
+    document.getElementById('medNotes').value = med.notes || '';
+    document.getElementById('medColor').value = med.color || '#7BAF8E';
+    document.getElementById('scheduleBuilder').innerHTML = '';
+    document.getElementById('modalTitle').textContent = 'Edit Medication';
+    initColorSwatches(med.color || '#7BAF8E');
+    (med.schedules || []).forEach(s => {
+      const days = s.days_of_week.split(',').map(Number);
+      addScheduleRow(s.time_of_day, s.label || '', days);
+    });
+    openModal('medModal');
+  }
+
+  async function saveMed() {
+    const name = document.getElementById('medName').value.trim();
+    if (!name) { alert('Please enter a medication name.'); return; }
+    const id = document.getElementById('medId').value;
+    const payload = {
+      name,
+      dosage: document.getElementById('medDosage').value,
+      notes: document.getElementById('medNotes').value,
+      color: document.getElementById('medColor').value,
+      schedules: getSchedules()
+    };
+    const url = id ? `/api/medications/${id}` : '/api/medications';
+    const method = id ? 'PUT' : 'POST';
+    await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    closeModal('medModal');
+    showToast(id ? '✓ Medication updated' : '✓ Medication added');
+    loadMeds();
+  }
+
+  function promptDelete(id) {
+    document.getElementById('deleteId').value = id;
+    openModal('deleteModal');
+  }
+
+  async function confirmDelete() {
+    const id = document.getElementById('deleteId').value;
+    await fetch(`/api/medications/${id}`, { method: 'DELETE' });
+    closeModal('deleteModal');
+    showToast('Medication removed');
+    loadMeds();
+  }
+
+  function formatTime(t) {
+    const [h, m] = t.split(':').map(Number);
+    return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+  }
+
+  function dayAbbrevs(days) {
+    const d = days.split(',').map(Number);
+    if (d.length === 7) return 'Every day';
+    if (JSON.stringify(d) === JSON.stringify([0,1,2,3,4])) return 'Weekdays';
+    if (JSON.stringify(d) === JSON.stringify([5,6])) return 'Weekends';
+    return d.map(i => DAYS[i]).join(', ');
+  }
+
+  async function loadMeds() {
+    const res = await fetch('/api/medications');
+    currentMeds = await res.json();
+    const container = document.getElementById('medsContainer');
+
+    if (!currentMeds.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">💊</div>
+          <p>No medications yet. Add your first one!</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="meds-grid">${currentMeds.map(m => `
+      <div class="med-card">
+        <div class="med-card-top">
+          <div class="med-dot" style="background:${m.color}"></div>
+          <div class="med-card-info">
+            <div class="med-card-name">${m.name}</div>
+            ${m.dosage ? `<div class="med-card-dosage">${m.dosage}</div>` : ''}
+            ${m.notes ? `<div class="med-card-notes">${m.notes}</div>` : ''}
+          </div>
+        </div>
+        <div class="med-card-schedules">
+          ${m.schedules.length ? m.schedules.map(s => `
+            <div class="sched-pill">
+              <span>⏰</span>
+              ${formatTime(s.time_of_day)} · ${dayAbbrevs(s.days_of_week)}
+              ${s.label ? `· ${s.label}` : ''}
+            </div>`).join('') : '<span style="color:var(--muted);font-size:0.8rem;">No reminders set</span>'}
+        </div>
+        <div class="med-card-actions">
+          <button class="btn btn-outline" onclick='editMed(${JSON.stringify(m)})'>Edit</button>
+          <button class="btn btn-danger" onclick="promptDelete(${m.id})">Remove</button>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  initColorSwatches('#7BAF8E');
+  loadMeds();
+</script>
+{% endblock %}

@@ -1,114 +1,87 @@
 # MedMinder
 
-An application to let you track your daily medications.
+A medication tracking web app built on Flask + SQLite + Google OAuth.
+
+## Features
+
+- **Google OAuth login** — no passwords, just sign in with Google
+- **Medication management** — add meds with name, dosage, color-coding, and notes
+- **Flexible scheduling** — set multiple reminder times per medication, per day of week
+- **Today's dashboard** — check off doses as you take them, see daily progress
+- **7-day adherence stats** — track how consistently you're taking your meds
+- **30-day history** — a visual heatmap + detailed log of every dose taken
+
+## Project structure
+
+```
+medminder/
+├── app.py                  # Flask app — all routes and API endpoints
+├── requirements.txt
+├── .env.example
+└── templates/
+    ├── base.html           # Shared layout, nav, styles, toast notifications
+    ├── index.html          # Landing / sign-in page
+    ├── dashboard.html      # Today's schedule (Today tab)
+    ├── medications.html    # Add/edit/delete medications
+    └── history.html        # Dose log + 30-day adherence heatmap
+```
+
+## Database schema
+
+```sql
+-- From the original starter:
+users (id, google_id, email, name, picture, given_name, family_name, locale, created_at, last_login)
+
+-- New tables:
+medications (id, user_id, name, dosage, notes, color, active, created_at)
+schedules   (id, med_id, user_id, time_of_day, days_of_week, label)
+dose_log    (id, schedule_id, user_id, med_id, taken_at, scheduled_date, status)
+```
+
+`days_of_week` is a comma-separated string of integers (0=Monday … 6=Sunday).
+
+## API endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/medications` | List all active medications (with schedules) |
+| POST | `/api/medications` | Add a medication |
+| PUT | `/api/medications/<id>` | Update a medication |
+| DELETE | `/api/medications/<id>` | Archive a medication |
+| GET | `/api/today` | Today's scheduled doses with taken status |
+| POST | `/api/log` | Toggle a dose taken/untaken |
+| GET | `/api/history?days=N` | Dose log for past N days |
+| GET | `/api/stats` | Summary stats (totals, 7-day adherence) |
 
 ## Quick start
 
-### 1. Create a Google OAuth app
+### 1. Set up Google OAuth (same as original)
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services → Credentials**.
-2. Click **Create Credentials → OAuth client ID**.
-3. Application type: **Web application**.
-4. Under **Authorised redirect URIs**, add:
+- Google Cloud Console → APIs & Services → Credentials → OAuth client ID
+- Redirect URI: `http://localhost:5000/authorized`
 
-   ```bash
-   http://localhost:5000/authorized
-   ```
-
-5. Copy your **Client ID** and **Client Secret**.
-
-### 2. Set up the project
+### 2. Install & configure
 
 ```bash
-# Clone / copy the project, then:
-cd google-auth-app
+cd medminder
 python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-### 3. Configure secrets
-
-```bash
 cp .env.example .env
+# Fill in FLASK_SECRET_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 ```
 
-Edit `.env`:
-
-```bash
-FLASK_SECRET_KEY=some-long-random-string
-GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=xxxx
-```
-
-Load the env vars before running (or use `python-dotenv`):
-
-```bash
-export $(grep -v '^#' .env | xargs)   # macOS/Linux
-# or install python-dotenv and add load_dotenv() to app.py
-```
-
-### 4. Run
+### 3. Run
 
 ```bash
 python app.py
 ```
 
-Open [http://localhost:5000](http://localhost:5000).
+Open http://localhost:5000 — sign in with Google, add your medications!
 
----
+## Extending
 
-## Optional: auto-load `.env` with python-dotenv
-
-```bash
-pip install python-dotenv
-```
-
-Add to the top of `app.py`:
-
-```python
-from dotenv import load_dotenv
-load_dotenv()
-```
-
----
-
-## Database schema
-
-```sql
-CREATE TABLE users (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    google_id   TEXT    UNIQUE NOT NULL,   -- Google "sub" claim
-    email       TEXT    NOT NULL,
-    name        TEXT,
-    picture     TEXT,
-    given_name  TEXT,
-    family_name TEXT,
-    locale      TEXT,
-    created_at  TEXT    NOT NULL,          -- ISO-8601 UTC
-    last_login  TEXT    NOT NULL           -- ISO-8601 UTC
-);
-```
-
-Users are upserted on every login — `created_at` stays fixed, `last_login` updates.
-
----
-
-## API endpoint
-
-| Method | Path | Auth required | Description |
-|--------|------|---------------|-------------|
-| GET | `/` | No | Landing page |
-| GET | `/login` | No | Starts Google OAuth flow |
-| GET | `/authorized` | No | OAuth callback |
-| GET | `/dashboard` | Yes (session) | Profile + users table |
-| GET | `/api/users` | Yes (session) | JSON list of all users |
-| GET | `/logout` | No | Clears session, redirects to `/` |
-
----
-
-## Extending this template
-
-- **Switch to PostgreSQL/MySQL**: replace the `sqlite3` calls in `app.py` with SQLAlchemy.
-- **Add roles**: add a `role` column to the users table and check it in a `@login_required` decorator.
-- **Production deployment**: set `FLASK_SECRET_KEY` to a real secret, use a proper WSGI server (gunicorn), and register your production domain in Google Console.
+- **Email/SMS reminders**: integrate SendGrid or Twilio; add a background scheduler (APScheduler) to fire based on `schedules` table rows
+- **Multiple profiles**: add a `profile_id` foreign key to medications to let one account track meds for family members
+- **PostgreSQL**: swap `sqlite3` calls for SQLAlchemy with a Postgres URL for production
+- **PWA / push notifications**: add a service worker and Web Push to send browser notifications at scheduled times

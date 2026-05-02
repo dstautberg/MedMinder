@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% block title %}History — MedMinder{% endblock %}
+
+{% block extra_head %}
+<style>
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .filter-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--slate);
+    transition: all 0.2s;
+  }
+
+  .filter-btn.active {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: white;
+  }
+
+  /* Heatmap-style calendar */
+  .adherence-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .heatmap-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+  }
+
+  .heatmap-grid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .heatmap-day {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    cursor: default;
+    transition: transform 0.1s;
+    position: relative;
+  }
+
+  .heatmap-day:hover { transform: scale(1.15); z-index: 1; }
+
+  .heatmap-day .tooltip {
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--charcoal);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+
+  .heatmap-day:hover .tooltip { opacity: 1; }
+
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+
+  /* History list */
+  .history-day-group { margin-bottom: 1.75rem; }
+
+  .history-date-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .history-date-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .history-entry {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.8rem 1.1rem;
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.4rem;
+    box-shadow: var(--shadow);
+  }
+
+  .history-entry .color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .history-entry .med-name {
+    flex: 1;
+    font-size: 0.925rem;
+    font-weight: 500;
+  }
+
+  .history-entry .time-info {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .history-entry .check-mark {
+    color: var(--sage-dark);
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>History</h1>
+</div>
+
+<!-- Adherence heatmap -->
+<div class="heatmap-card">
+  <div class="adherence-title">30-Day Adherence</div>
+  <div class="heatmap-grid" id="heatmapGrid"></div>
+  <div class="heatmap-legend">
+    <span>Less</span>
+    <div class="legend-swatch" style="background:#EEF0F2"></div>
+    <div class="legend-swatch" style="background:#C2DFCC"></div>
+    <div class="legend-swatch" style="background:#8FC9A1"></div>
+    <div class="legend-swatch" style="background:#5DB580"></div>
+    <div class="legend-swatch" style="background:#3A9B62"></div>
+    <span>More</span>
+  </div>
+</div>
+
+<!-- Filter + log -->
+<div class="filter-row">
+  <button class="filter-btn active" onclick="setFilter(7, this)">Past 7 days</button>
+  <button class="filter-btn" onclick="setFilter(14, this)">14 days</button>
+  <button class="filter-btn" onclick="setFilter(30, this)">30 days</button>
+</div>
+
+<div id="historyList">
+  <div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentDays = 7;
+
+  function setFilter(days, btn) {
+    currentDays = days;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadHistory();
+  }
+
+  function formatDate(str) {
+    const d = new Date(str + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  }
+
+  function formatTime(str) {
+    const d = new Date(str + 'Z');
+    const h = d.getHours(), m = d.getMinutes();
+    return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+  }
+
+  function heatColor(pct) {
+    if (pct === null) return '#EEF0F2';
+    if (pct === 0)    return '#EEF0F2';
+    if (pct <= 25)    return '#C2DFCC';
+    if (pct <= 50)    return '#8FC9A1';
+    if (pct <= 75)    return '#5DB580';
+    return '#3A9B62';
+  }
+
+  async function loadHeatmap() {
+    const res = await fetch('/api/history?days=30');
+    const logs = await res.json();
+
+    // Count doses per day
+    const counts = {};
+    logs.forEach(l => {
+      counts[l.scheduled_date] = (counts[l.scheduled_date] || 0) + 1;
+    });
+
+    const today = new Date();
+    const grid = document.getElementById('heatmapGrid');
+    grid.innerHTML = '';
+
+    const max = Math.max(...Object.values(counts), 1);
+
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const count = counts[key] || 0;
+      const pct = count / max * 100;
+      const day = document.createElement('div');
+      day.className = 'heatmap-day';
+      day.style.background = heatColor(count > 0 ? pct : 0);
+      day.style.border = '1px solid rgba(0,0,0,0.06)';
+      day.innerHTML = `
+        <span>${d.getDate()}</span>
+        <div class="tooltip">${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}: ${count} dose${count !== 1 ? 's' : ''}</div>`;
+      grid.appendChild(day);
+    }
+  }
+
+  async function loadHistory() {
+    const res = await fetch(`/api/history?days=${currentDays}`);
+    const logs = await res.json();
+    const container = document.getElementById('historyList');
+
+    if (!logs.length) {
+      container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>No doses logged in this period.</p></div>`;
+      return;
+    }
+
+    // Group by date
+    const grouped = {};
+    logs.forEach(l => {
+      (grouped[l.scheduled_date] = grouped[l.scheduled_date] || []).push(l);
+    });
+
+    container.innerHTML = Object.entries(grouped).map(([date, entries]) => `
+      <div class="history-day-group">
+        <div class="history-date-label">${formatDate(date)}</div>
+        ${entries.map(e => `
+          <div class="history-entry">
+            <div class="color-dot" style="background:${e.color}"></div>
+            <div class="med-name">${e.med_name}</div>
+            <div class="time-info">
+              <span class="check-mark">✓</span>
+              ${formatTime(e.taken_at)}
+            </div>
+          </div>`).join('')}
+      </div>`).join('');
+  }
+
+  loadHeatmap();
+  loadHistory();
+</script>
+{% endblock %}
