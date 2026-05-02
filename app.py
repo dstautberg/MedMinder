@@ -370,8 +370,20 @@ def api_stats():
         "scheduled_week": scheduled_week,
     })
 
+# ── PWA routes ────────────────────────────────────────────────────────────────
+@app.route("/sw.js")
+def service_worker():
+    from flask import send_from_directory
+    response = send_from_directory(app.static_folder, 'sw.js')
+    response.headers['Service-Worker-Allowed'] = '/'
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
+
+@app.route("/manifest.json")
+def manifest():
+    from flask import send_from_directory
+    return send_from_directory(app.static_folder, 'manifest.json')
+
 if __name__ == "__main__":
     init_db()
-    app.run(host='127.0.0.1', debug=True, port=5000)
-    # app.run(host='0.0.0.0', debug=True, port=5000)
-    
+    app.run(debug=True, port=5000)

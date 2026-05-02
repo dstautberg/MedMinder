@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}MedMinder{% endblock %}</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7BAF8E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="MedMinder">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
   <style>
@@ -361,6 +370,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ── Utilities ──────────────────────────────────────────────────────────────
   function showToast(msg, duration=2500) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -368,20 +378,164 @@
     setTimeout(() => t.classList.remove('show'), duration);
   }
 
-  function openModal(id) {
-    document.getElementById(id).classList.add('open');
-  }
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-  function closeModal(id) {
-    document.getElementById(id).classList.remove('open');
-  }
-
-  // close modal on backdrop click
   document.querySelectorAll('.modal-backdrop').forEach(el => {
-    el.addEventListener('click', e => {
-      if (e.target === el) el.classList.remove('open');
-    });
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
   });
+
+  // ── Service Worker registration ────────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then(reg => console.log('SW registered, scope:', reg.scope))
+        .catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+
+  // ── Gentle chime using Web Audio API ──────────────────────────────────────
+  function playChime() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Three-note ascending chime: E4 → G#4 → B4
+      const notes = [329.63, 415.30, 493.88];
+      const times = [0, 0.18, 0.36];
+
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+
+        const t = ctx.currentTime + times[i];
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.28, t + 0.04);   // gentle attack
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.9); // long decay
+
+        osc.start(t);
+        osc.stop(t + 0.95);
+      });
+    } catch (e) {
+      console.warn('Audio not available:', e);
+    }
+  }
+
+  // ── Notification permission ────────────────────────────────────────────────
+  {% if user %}
+  async function requestNotificationPermission() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      const result = await Notification.requestPermission();
+      console.log('Notification permission:', result);
+    }
+  }
+
+  // Ask for permission once the user is logged in
+  requestNotificationPermission();
+
+  // ── Reminder checker ──────────────────────────────────────────────────────
+  // Tracks which schedule+date combos we've already notified about
+  const _firedReminders = new Set();
+
+  async function checkReminders() {
+    if (Notification.permission !== 'granted') return;
+
+    let doses;
+    try {
+      const res = await fetch('/api/today');
+      doses = await res.json();
+    } catch (e) { return; }
+
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    doses.forEach(dose => {
+      if (dose.taken) return; // already taken, skip
+
+      const [h, m] = dose.time_of_day.split(':').map(Number);
+      const doseMinutes = h * 60 + m;
+      const key = `${dose.id}-${todayStr}-${dose.time_of_day}`;
+
+      // Fire if we're within the same minute as the scheduled time
+      // and haven't fired this reminder yet this session
+      if (currentMinutes === doseMinutes && !_firedReminders.has(key)) {
+        _firedReminders.add(key);
+        fireReminder(dose);
+      }
+    });
+  }
+
+  function fireReminder(dose) {
+    const title = `Time to take ${dose.med_name}`;
+    const body = [dose.dosage, dose.label].filter(Boolean).join(' · ') || 'Tap to mark as taken';
+
+    // Play chime
+    playChime();
+
+    // Browser notification
+    const notification = new Notification(title, {
+      body,
+      icon: '/static/icons/icon-192.png',
+      badge: '/static/icons/icon-192.png',
+      tag: `med-${dose.id}`,
+      renotify: true,
+      silent: true, // we handle sound ourselves
+    });
+
+    notification.onclick = () => {
+      window.focus();
+      window.location.href = '/dashboard';
+      notification.close();
+    };
+
+    // Also show an in-app banner in case the tab is open
+    showReminderBanner(title, body, dose);
+  }
+
+  // ── In-app reminder banner ─────────────────────────────────────────────────
+  function showReminderBanner(title, body, dose) {
+    // Remove any existing banner
+    document.getElementById('reminderBanner')?.remove();
+
+    const banner = document.createElement('div');
+    banner.id = 'reminderBanner';
+    banner.style.cssText = `
+      position: fixed; top: 72px; left: 50%; transform: translateX(-50%);
+      background: white; border: 2px solid #7BAF8E; border-radius: 14px;
+      padding: 1rem 1.25rem; box-shadow: 0 8px 32px rgba(44,44,44,0.18);
+      z-index: 400; display: flex; align-items: center; gap: 1rem;
+      max-width: 420px; width: calc(100% - 2rem);
+      animation: slideDown 0.3s ease;
+    `;
+    banner.innerHTML = `
+      <style>
+        @keyframes slideDown { from { opacity:0; transform: translateX(-50%) translateY(-12px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+      </style>
+      <div style="font-size:1.75rem">💊</div>
+      <div style="flex:1">
+        <div style="font-weight:600; font-size:0.95rem; color:#2C2C2C">${title}</div>
+        <div style="font-size:0.8rem; color:#5A6472; margin-top:2px">${body}</div>
+      </div>
+      <button onclick="this.closest('#reminderBanner').remove()"
+        style="background:none;border:none;font-size:1.3rem;color:#9CA6B0;cursor:pointer;line-height:1">×</button>
+    `;
+    document.body.appendChild(banner);
+
+    // Auto-dismiss after 30 seconds
+    setTimeout(() => banner.remove(), 30000);
+  }
+
+  // Check every 30 seconds (catches the right minute reliably)
+  checkReminders();
+  setInterval(checkReminders, 30000);
+  {% endif %}
 </script>
 {% block scripts %}{% endblock %}
 </body>
