@@ -1,6 +1,6 @@
 # MedMinder
 
-An application for let you track your daily medications.
+An application to let you track your daily medications.
 
 ## Quick start
 
