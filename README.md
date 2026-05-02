@@ -1,26 +1,6 @@
-# AuthPortal — Google OAuth + Flask + SQLite Template
+# MedMinder
 
-A minimal, production-ready starting point for any Python web app that needs Google sign-in.
-
-## What it does
-
-1. Shows a landing page with a **"Continue with Google"** button.
-2. Redirects the user through Google's OAuth 2.0 / OpenID Connect flow.
-3. On return, extracts the full Google profile (`sub`, `email`, `name`, `picture`, `given_name`, `family_name`, `locale`).
-4. **Upserts** a user record in a local SQLite database (`users.db`).
-5. Displays the profile info and a live table of all registered users on the dashboard.
-
-## Project structure
-
-```
-google-auth-app/
-├── app.py               # Flask app: routes, OAuth, DB logic
-├── requirements.txt
-├── .env.example         # Copy → .env and fill in secrets
-└── templates/
-    ├── index.html       # Landing / sign-in page
-    └── dashboard.html   # Post-login profile + users table
-```
+An application for let you track your daily medications.
 
 ## Quick start
 
@@ -30,9 +10,11 @@ google-auth-app/
 2. Click **Create Credentials → OAuth client ID**.
 3. Application type: **Web application**.
 4. Under **Authorised redirect URIs**, add:
-   ```
+
+   ```bash
    http://localhost:5000/authorized
    ```
+
 5. Copy your **Client ID** and **Client Secret**.
 
 ### 2. Set up the project
@@ -52,7 +34,8 @@ cp .env.example .env
 ```
 
 Edit `.env`:
-```
+
+```bash
 FLASK_SECRET_KEY=some-long-random-string
 GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=xxxx
@@ -82,6 +65,7 @@ pip install python-dotenv
 ```
 
 Add to the top of `app.py`:
+
 ```python
 from dotenv import load_dotenv
 load_dotenv()
