@@ -8,15 +8,13 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
-  .page-header h1 {
-    font-family: 'Fraunces', serif;
-    font-size: 2rem;
-    font-weight: 600;
-  }
+  .page-header h1 { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 600; }
+  .header-actions { display: flex; gap: 0.6rem; }
 
-  /* Med cards grid */
   .meds-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -41,34 +39,12 @@
     gap: 0.75rem;
   }
 
-  .med-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-top: 5px;
-    flex-shrink: 0;
-  }
-
+  .med-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
   .med-card-info { flex: 1; min-width: 0; }
-
-  .med-card-name {
-    font-weight: 600;
-    font-size: 1.05rem;
-    color: var(--charcoal);
-  }
-
-  .med-card-dosage {
-    font-size: 0.825rem;
-    color: var(--slate);
-    margin-top: 0.2rem;
-  }
-
-  .med-card-notes {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 0.4rem;
-    line-height: 1.4;
-  }
+  .med-card-name { font-weight: 600; font-size: 1.05rem; color: var(--charcoal); }
+  .med-card-dosage { font-size: 0.825rem; color: var(--slate); margin-top: 0.2rem; }
+  .med-card-ndc { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; font-family: monospace; }
+  .med-card-notes { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; line-height: 1.4; }
 
   .med-card-schedules {
     border-top: 1px solid var(--border);
@@ -98,17 +74,10 @@
     justify-content: flex-end;
   }
 
-  /* Color picker swatches */
-  .color-swatches {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 0.5rem;
-  }
+  .color-swatches { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
 
   .color-swatch {
-    width: 28px;
-    height: 28px;
+    width: 28px; height: 28px;
     border-radius: 50%;
     border: 2px solid transparent;
     cursor: pointer;
@@ -118,7 +87,6 @@
   .color-swatch:hover { transform: scale(1.15); }
   .color-swatch.selected { border-color: var(--charcoal); }
 
-  /* Schedule builder */
   .schedule-builder { margin-top: 1rem; }
 
   .schedule-row {
@@ -134,27 +102,12 @@
   .schedule-row input[type=time] { flex: 0 0 120px; }
   .schedule-row input[type=text] { flex: 1; }
 
-  .day-checks {
-    display: flex;
-    gap: 0.3rem;
-    margin-top: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .day-check {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-
+  .day-checks { display: flex; gap: 0.3rem; margin-top: 0.5rem; flex-wrap: wrap; }
+  .day-check { display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .day-check input { margin: 0; }
   .day-check label {
-    font-size: 0.7rem;
-    text-transform: none;
-    letter-spacing: 0;
-    color: var(--slate);
-    font-weight: 400;
+    font-size: 0.7rem; text-transform: none; letter-spacing: 0;
+    color: var(--slate); font-weight: 400;
   }
 
   .add-schedule-btn {
@@ -171,20 +124,109 @@
   }
 
   .add-schedule-btn:hover { border-color: var(--sage); color: var(--sage-dark); }
-
   .remove-sched { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; }
   .remove-sched:hover { color: #C0392B; }
+
+  /* Scanner */
+  #scannerVideo {
+    width: 100%;
+    border-radius: var(--radius-sm);
+    background: #000;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
+
+  .scan-overlay { position: relative; margin-bottom: 1rem; }
+
+  .scan-crosshair {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .scan-crosshair::before {
+    content: '';
+    width: 65%;
+    height: 38%;
+    border: 2.5px solid rgba(123,175,142,0.9);
+    border-radius: 8px;
+    box-shadow: 0 0 0 2000px rgba(0,0,0,0.38);
+  }
+
+  .scan-status {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--slate);
+    margin-bottom: 1rem;
+    min-height: 1.4em;
+    line-height: 1.4;
+  }
+
+  .scan-status.scanning { color: var(--sage-dark); }
+  .scan-status.found    { color: #2E7D32; font-weight: 600; }
+  .scan-status.error    { color: #C0392B; }
+
+  .fda-preview {
+    background: #F4FAF7;
+    border: 1.5px solid var(--sage-light);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  .fda-preview.show { display: block; }
+  .fda-preview-name { font-weight: 600; font-size: 1rem; color: var(--charcoal); }
+  .fda-preview-detail { font-size: 0.82rem; color: var(--slate); margin-top: 0.25rem; line-height: 1.5; }
+  .fda-preview-purpose { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; font-style: italic; line-height: 1.4; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
   <h1>Medications</h1>
-  <button class="btn btn-primary" onclick="openModal('medModal'); resetForm()">+ Add Medication</button>
+  <div class="header-actions">
+    <button class="btn btn-outline" onclick="startScan()">📷 Scan Med</button>
+    <button class="btn btn-primary" onclick="openAddForm()">+ Add Medication</button>
+  </div>
 </div>
 
 <div id="medsContainer">
   <div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div>
+</div>
+
+<!-- Scanner Modal -->
+<div class="modal-backdrop" id="scanModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title">Scan Medication Barcode</div>
+      <button class="modal-close" onclick="stopScan()">×</button>
+    </div>
+
+    <div class="scan-overlay">
+      <video id="scannerVideo" playsinline muted></video>
+      <div class="scan-crosshair"></div>
+    </div>
+
+    <div class="scan-status" id="scanStatus">Point camera at the barcode on the bottle</div>
+
+    <div class="fda-preview" id="fdaPreview">
+      <div class="fda-preview-name"    id="fdaName"></div>
+      <div class="fda-preview-detail"  id="fdaDetail"></div>
+      <div class="fda-preview-purpose" id="fdaPurpose"></div>
+    </div>
+
+    <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="stopScan()">Cancel</button>
+      <button class="btn btn-primary" id="scanUseBtn" style="display:none" onclick="useScanResult()">
+        Use This Medication
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- Add/Edit Modal -->
@@ -195,54 +237,55 @@
       <button class="modal-close" onclick="closeModal('medModal')">×</button>
     </div>
 
-    <div id="medForm">
-      <input type="hidden" id="medId">
+    <input type="hidden" id="medId">
+    <input type="hidden" id="medNdc">
 
-      <div class="form-group">
-        <label>Medication Name *</label>
-        <input type="text" id="medName" placeholder="e.g. Lisinopril">
-      </div>
+    <div class="form-group">
+      <label>Medication Name *</label>
+      <input type="text" id="medName" placeholder="e.g. Lisinopril">
+    </div>
 
-      <div class="form-group">
-        <label>Dosage</label>
-        <input type="text" id="medDosage" placeholder="e.g. 10mg, 1 tablet">
-      </div>
+    <div class="form-group">
+      <label>Dosage</label>
+      <input type="text" id="medDosage" placeholder="e.g. 10mg, 1 tablet">
+    </div>
 
-      <div class="form-group">
-        <label>Color</label>
-        <div class="color-swatches" id="colorSwatches"></div>
-        <input type="hidden" id="medColor" value="#7BAF8E">
-      </div>
+    <div class="form-group">
+      <label>Color</label>
+      <div class="color-swatches" id="colorSwatches"></div>
+      <input type="hidden" id="medColor" value="#7BAF8E">
+    </div>
 
-      <div class="form-group">
-        <label>Notes</label>
-        <textarea id="medNotes" placeholder="e.g. Take with food, avoid grapefruit…"></textarea>
-      </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="medNotes" placeholder="e.g. Take with food, avoid grapefruit…"></textarea>
+    </div>
 
-      <div class="form-group">
-        <label>Schedule</label>
-        <div class="schedule-builder" id="scheduleBuilder"></div>
-        <button class="add-schedule-btn" type="button" onclick="addScheduleRow()">+ Add reminder time</button>
-      </div>
+    <div class="form-group">
+      <label>Schedule</label>
+      <div class="schedule-builder" id="scheduleBuilder"></div>
+      <button class="add-schedule-btn" type="button" onclick="addScheduleRow()">+ Add reminder time</button>
+    </div>
 
-      <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1.5rem;">
-        <button class="btn btn-outline" onclick="closeModal('medModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveMed()">Save Medication</button>
-      </div>
+    <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1.5rem;">
+      <button class="btn btn-outline" onclick="closeModal('medModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMed()">Save Medication</button>
     </div>
   </div>
 </div>
 
-<!-- Confirm delete modal -->
+<!-- Delete Modal -->
 <div class="modal-backdrop" id="deleteModal">
   <div class="modal" style="max-width:380px; text-align:center;">
     <div style="font-size:2.5rem; margin-bottom:0.75rem;">🗑️</div>
     <div class="modal-title" style="margin-bottom:0.5rem;">Remove Medication?</div>
-    <p style="color:var(--slate); font-size:0.9rem; margin-bottom:1.5rem;">This will archive the medication and its history. You can't undo this.</p>
+    <p style="color:var(--slate); font-size:0.9rem; margin-bottom:1.5rem;">
+      This will archive the medication and its history. You can't undo this.
+    </p>
     <input type="hidden" id="deleteId">
     <div style="display:flex; gap:0.75rem; justify-content:center;">
       <button class="btn btn-outline" onclick="closeModal('deleteModal')">Cancel</button>
-      <button class="btn btn-danger" onclick="confirmDelete()">Yes, remove</button>
+      <button class="btn btn-danger"  onclick="confirmDelete()">Yes, remove</button>
     </div>
   </div>
 </div>
@@ -251,16 +294,19 @@
 {% block scripts %}
 <script>
   const COLORS = ['#7BAF8E','#5B8DB8','#C0826B','#9B7EC8','#C8AA5A','#6BAAB5','#C87E7E','#7EB57E','#B5836B','#8E8EB5'];
-  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-  let currentMeds = [];
+  let currentMeds  = [];
+  let scanResult   = null;
+  let _lastScanned = null;
 
-  function initColorSwatches(selectedColor) {
+  // ── Color swatches ────────────────────────────────────────────────────────
+  function initColorSwatches(sel) {
     const wrap = document.getElementById('colorSwatches');
     wrap.innerHTML = '';
     COLORS.forEach(c => {
       const s = document.createElement('div');
-      s.className = 'color-swatch' + (c === selectedColor ? ' selected' : '');
+      s.className = 'color-swatch' + (c === sel ? ' selected' : '');
       s.style.background = c;
       s.onclick = () => {
         wrap.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('selected'));
@@ -271,59 +317,83 @@
     });
   }
 
+  // ── Schedule rows ─────────────────────────────────────────────────────────
   function addScheduleRow(time='', label='', days=[0,1,2,3,4,5,6]) {
     const builder = document.getElementById('scheduleBuilder');
     const row = document.createElement('div');
     row.className = 'schedule-row-wrap';
     const dayChecks = DAYS.map((d, i) =>
-      `<div class="day-check"><input type="checkbox" ${days.includes(i)?'checked':''} value="${i}"><label>${d}</label></div>`
+      `<div class="day-check">
+         <input type="checkbox" ${days.includes(i) ? 'checked' : ''} value="${i}">
+         <label>${d}</label>
+       </div>`
     ).join('');
     row.innerHTML = `
       <div class="schedule-row">
         <input type="time" value="${time || '08:00'}" class="sched-time">
-        <input type="text" placeholder="Label (optional)" value="${label}" class="sched-label">
+        <input type="text"  placeholder="Label (optional)" value="${label}" class="sched-label">
         <button class="remove-sched" onclick="this.closest('.schedule-row-wrap').remove()">×</button>
       </div>
-      <div class="day-checks">${dayChecks}</div>
-    `;
+      <div class="day-checks">${dayChecks}</div>`;
     builder.appendChild(row);
   }
 
   function getSchedules() {
-    return [...document.querySelectorAll('.schedule-row-wrap')].map(wrap => {
-      const time = wrap.querySelector('.sched-time').value;
-      const label = wrap.querySelector('.sched-label').value;
-      const days = [...wrap.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
-      return { time_of_day: time, label, days_of_week: days.join(',') };
-    });
+    return [...document.querySelectorAll('.schedule-row-wrap')].map(wrap => ({
+      time_of_day:  wrap.querySelector('.sched-time').value,
+      label:        wrap.querySelector('.sched-label').value,
+      days_of_week: [...wrap.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value).join(','),
+    }));
   }
 
-  function resetForm() {
-    document.getElementById('medId').value = '';
-    document.getElementById('medName').value = '';
-    document.getElementById('medDosage').value = '';
+  // ── Form helpers ──────────────────────────────────────────────────────────
+  function openAddForm() {
+    document.getElementById('medId').value    = '';
+    document.getElementById('medNdc').value   = '';
+    document.getElementById('medName').value  = '';
+    document.getElementById('medDosage').value= '';
     document.getElementById('medNotes').value = '';
-    document.getElementById('medColor').value = '#7BAF8E';
     document.getElementById('scheduleBuilder').innerHTML = '';
     document.getElementById('modalTitle').textContent = 'Add Medication';
     initColorSwatches('#7BAF8E');
+    document.getElementById('medColor').value = '#7BAF8E';
     addScheduleRow('08:00', '', [0,1,2,3,4,5,6]);
+    openModal('medModal');
+  }
+
+  function fillForm(data, existingMed) {
+    document.getElementById('medId').value     = existingMed ? existingMed.id : '';
+    document.getElementById('medNdc').value    = data.ndc    || '';
+    document.getElementById('medName').value   = data.name   || '';
+    document.getElementById('medDosage').value = data.dosage || '';
+
+    // Build notes: prepend generic name if different, then purpose
+    let notes = '';
+    if (data.generic && data.name && data.generic.toLowerCase() !== data.name.toLowerCase()) {
+      notes += `Generic: ${data.generic}\n`;
+    }
+    if (data.purpose) notes += data.purpose;
+    if (!notes && existingMed) notes = existingMed.notes || '';
+    document.getElementById('medNotes').value = notes;
+
+    const color = existingMed?.color || '#7BAF8E';
+    document.getElementById('medColor').value = color;
+    document.getElementById('scheduleBuilder').innerHTML = '';
+    document.getElementById('modalTitle').textContent = existingMed ? 'Edit Medication' : 'Add Medication';
+    initColorSwatches(color);
+
+    if (existingMed?.schedules?.length) {
+      existingMed.schedules.forEach(s =>
+        addScheduleRow(s.time_of_day, s.label || '', s.days_of_week.split(',').map(Number))
+      );
+    } else {
+      addScheduleRow('08:00', '', [0,1,2,3,4,5,6]);
+    }
+    openModal('medModal');
   }
 
   function editMed(med) {
-    document.getElementById('medId').value = med.id;
-    document.getElementById('medName').value = med.name;
-    document.getElementById('medDosage').value = med.dosage || '';
-    document.getElementById('medNotes').value = med.notes || '';
-    document.getElementById('medColor').value = med.color || '#7BAF8E';
-    document.getElementById('scheduleBuilder').innerHTML = '';
-    document.getElementById('modalTitle').textContent = 'Edit Medication';
-    initColorSwatches(med.color || '#7BAF8E');
-    (med.schedules || []).forEach(s => {
-      const days = s.days_of_week.split(',').map(Number);
-      addScheduleRow(s.time_of_day, s.label || '', days);
-    });
-    openModal('medModal');
+    fillForm({ name: med.name, dosage: med.dosage, ndc: med.ndc, purpose: med.notes, generic: '' }, med);
   }
 
   async function saveMed() {
@@ -332,14 +402,17 @@
     const id = document.getElementById('medId').value;
     const payload = {
       name,
-      dosage: document.getElementById('medDosage').value,
-      notes: document.getElementById('medNotes').value,
-      color: document.getElementById('medColor').value,
-      schedules: getSchedules()
+      dosage:    document.getElementById('medDosage').value,
+      notes:     document.getElementById('medNotes').value,
+      color:     document.getElementById('medColor').value,
+      ndc:       document.getElementById('medNdc').value,
+      schedules: getSchedules(),
     };
-    const url = id ? `/api/medications/${id}` : '/api/medications';
-    const method = id ? 'PUT' : 'POST';
-    await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    await fetch(id ? `/api/medications/${id}` : '/api/medications', {
+      method: id ? 'PUT' : 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
     closeModal('medModal');
     showToast(id ? '✓ Medication updated' : '✓ Medication added');
     loadMeds();
@@ -358,6 +431,249 @@
     loadMeds();
   }
 
+  function setScanStatus(msg, cls='') {
+    const el = document.getElementById('scanStatus');
+    el.textContent = msg;
+    el.className = 'scan-status ' + cls;
+  }
+
+  // ── Pyzbar frame-capture scanner ───────────────────────────────────────────
+  let videoStream    = null;
+  let scanInterval   = null;
+  let scanCanvas     = null;
+  let scanCtx        = null;
+  let scanningActive = false;
+
+  async function startScan() {
+    scanResult     = null;
+    _lastScanned   = null;
+    scanningActive = false;
+    document.getElementById('fdaPreview').classList.remove('show');
+    document.getElementById('scanUseBtn').style.display = 'none';
+    setScanStatus('Starting camera…');
+    openModal('scanModal');
+
+    // Check if pyzbar is available on server
+    try {
+      const statusRes = await fetch('/api/scan/status');
+      const status = await statusRes.json();
+      if (!status.available) {
+        setScanStatus('pyzbar not installed on server. Run: pip install pyzbar pillow', 'error');
+        return;
+      }
+    } catch(e) {
+      setScanStatus('Could not reach server.', 'error');
+      return;
+    }
+
+    // Open camera
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      const video = document.getElementById('scannerVideo');
+      video.srcObject = videoStream;
+      await video.play();
+
+      // Set up offscreen canvas for frame capture
+      scanCanvas = document.createElement('canvas');
+      scanCanvas.width  = 640;
+      scanCanvas.height = 480;
+      scanCtx = scanCanvas.getContext('2d');
+
+      setScanStatus('Point camera at the barcode on the bottle', 'scanning');
+      scanningActive = true;
+
+      // Send a frame every 400ms
+      scanInterval = setInterval(captureAndSend, 400);
+    } catch(e) {
+      setScanStatus('Camera error: ' + (e.message || 'Could not access camera'), 'error');
+    }
+  }
+
+  async function captureAndSend() {
+    if (!scanningActive) return;
+    const video = document.getElementById('scannerVideo');
+    if (!video.videoWidth) return;
+
+    scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+
+    scanCanvas.toBlob(async (blob) => {
+      if (!blob || !scanningActive) return;
+      try {
+        const fd = new FormData();
+        fd.append('frame', blob, 'frame.jpg');
+        const res = await fetch('/api/scan', { method: 'POST', body: fd });
+        if (res.status === 404) return;
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.found && data.barcode && data.barcode !== _lastScanned) {
+          scanningActive = false;
+          clearInterval(scanInterval);
+          // Use server-parsed NDC from biip, fall back to raw barcode
+          onBarcodeScanned(data.barcode, data.format, data.ndc, data.expiry, data.lot);
+        }
+      } catch(e) {}
+    }, 'image/jpeg', 0.85);
+  }
+
+  function stopScan() {
+    scanningActive = false;
+    clearInterval(scanInterval);
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => t.stop());
+      videoStream = null;
+    }
+    const video = document.getElementById('scannerVideo');
+    video.srcObject = null;
+    closeModal('scanModal');
+  }
+
+  async function onBarcodeScanned(barcode, format, ndcFromServer, expiry, lot) {
+    _lastScanned = barcode;
+
+    // Use biip-parsed NDC from server, fall back to raw barcode
+    const ndc = ndcFromServer || barcode;
+    const parts = [`${format}: ${barcode}`];
+    if (ndc !== barcode) parts.push(`NDC: ${ndc}`);
+    if (expiry)          parts.push(`Exp: ${expiry}`);
+    if (lot)             parts.push(`Lot: ${lot}`);
+
+    setScanStatus(parts.join(' · ') + ' — searching FDA…', 'scanning');
+    document.getElementById('fdaPreview').classList.remove('show');
+    document.getElementById('scanUseBtn').style.display = 'none';
+
+    // ── 1. NDC lookup ─────────────────────────────────────────────────────
+    let data = null;
+    try {
+      const res = await fetch(`/api/fda/lookup?ndc=${encodeURIComponent(ndc)}`);
+      if (res.ok) data = await res.json();
+    } catch(e) {}
+
+    if (!data || data.error) {
+      // Show a name search fallback instead of just "not found"
+      setScanStatus(`NDC ${ndc} not in FDA database. Try searching by drug name:`, 'error');
+      scanResult = { name: '', dosage: '', ndc: ndc, purpose: '', generic: '' };
+
+      // Show an inline name search in the preview area
+      document.getElementById('fdaPreview').classList.add('show');
+      document.getElementById('fdaPreview').style.background = '#FFF8F0';
+      document.getElementById('fdaPreview').style.borderColor = '#E8D0B0';
+      document.getElementById('fdaName').innerHTML = `
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <input type="text" id="fdaNameSearch" placeholder="e.g. Tylenol, ibuprofen…"
+            style="flex:1; padding:0.5rem 0.75rem; border:1.5px solid #ccc; border-radius:8px;
+                   font-family:inherit; font-size:0.9rem;"
+            onkeydown="if(event.key==='Enter') searchByName()">
+          <button onclick="searchByName()" class="btn btn-primary" style="white-space:nowrap">Search</button>
+        </div>`;
+      document.getElementById('fdaDetail').textContent = '';
+      document.getElementById('fdaPurpose').textContent = '';
+      document.getElementById('scanUseBtn').textContent = 'Add Manually';
+      delete document.getElementById('scanUseBtn').dataset.matchId;
+      document.getElementById('scanUseBtn').style.display = 'inline-flex';
+      setTimeout(() => document.getElementById('fdaNameSearch')?.focus(), 100);
+      return;
+    }
+
+    scanResult = { ...data, ndc: data.ndc || ndc };
+
+    // Show preview
+    document.getElementById('fdaName').textContent =
+      data.name + (data.generic && data.generic.toLowerCase() !== data.name?.toLowerCase()
+        ? ` (${data.generic})` : '');
+    document.getElementById('fdaDetail').textContent =
+      [data.dosage, data.ndc ? `NDC: ${data.ndc}` : null].filter(Boolean).join(' · ');
+    document.getElementById('fdaPurpose').textContent = data.purpose || '';
+    document.getElementById('fdaPreview').classList.add('show');
+
+    // ── Match against existing meds ────────────────────────────────────────
+    const ndcClean = (data.ndc || ndc).replace(/-/g,'');
+    let match = currentMeds.find(m => m.ndc && m.ndc.replace(/-/g,'') === ndcClean);
+    if (!match && data.name) {
+      match = currentMeds.find(m => m.name.toLowerCase() === data.name.toLowerCase());
+    }
+    if (!match && data.generic) {
+      match = currentMeds.find(m => m.name.toLowerCase() === data.generic.toLowerCase());
+    }
+
+    const useBtn = document.getElementById('scanUseBtn');
+    if (match) {
+      setScanStatus(`✓ Matched "${match.name}" already in your list`, 'found');
+      useBtn.textContent = `Edit "${match.name}"`;
+      useBtn.dataset.matchId = match.id;
+    } else {
+      setScanStatus(`✓ Found: ${data.name} — not yet in your list`, 'found');
+      useBtn.textContent = 'Add to My Medications';
+      delete useBtn.dataset.matchId;
+    }
+    useBtn.style.display = 'inline-flex';
+  }
+
+  async function searchByName() {
+    const input = document.getElementById('fdaNameSearch');
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) return;
+
+    setScanStatus(`Searching FDA for "${name}"…`, 'scanning');
+    document.getElementById('fdaPreview').style.background = '';
+    document.getElementById('fdaPreview').style.borderColor = '';
+
+    let data = null;
+    try {
+      const res = await fetch(`/api/fda/lookup?name=${encodeURIComponent(name)}`);
+      if (res.ok) data = await res.json();
+    } catch(e) {}
+
+    if (!data || data.error) {
+      setScanStatus(`"${name}" not found in FDA database. Try a different spelling.`, 'error');
+      return;
+    }
+
+    // Reuse the existing NDC from the scan but fill in FDA drug info
+    const existingNdc = scanResult?.ndc || '';
+    scanResult = { ...data, ndc: existingNdc || data.ndc || '' };
+
+    document.getElementById('fdaName').textContent =
+      data.name + (data.generic && data.generic.toLowerCase() !== data.name?.toLowerCase()
+        ? ` (${data.generic})` : '');
+    document.getElementById('fdaDetail').textContent =
+      [data.dosage, data.ndc ? `NDC: ${data.ndc}` : null].filter(Boolean).join(' · ');
+    document.getElementById('fdaPurpose').textContent = data.purpose || '';
+    document.getElementById('fdaPreview').classList.add('show');
+
+    // Match against existing meds
+    let match = null;
+    if (data.name) match = currentMeds.find(m => m.name.toLowerCase() === data.name.toLowerCase());
+    if (!match && data.generic) match = currentMeds.find(m => m.name.toLowerCase() === data.generic.toLowerCase());
+
+    const useBtn = document.getElementById('scanUseBtn');
+    if (match) {
+      setScanStatus(`✓ Matched "${match.name}" already in your list`, 'found');
+      useBtn.textContent = `Edit "${match.name}"`;
+      useBtn.dataset.matchId = match.id;
+    } else {
+      setScanStatus(`✓ Found: ${data.name} — not yet in your list`, 'found');
+      useBtn.textContent = 'Add to My Medications';
+      delete useBtn.dataset.matchId;
+    }
+    useBtn.style.display = 'inline-flex';
+  }
+
+  function useScanResult() {
+    const matchId = document.getElementById('scanUseBtn').dataset.matchId;
+    stopScan();
+    _lastScanned = null;
+    if (matchId) {
+      const existing = currentMeds.find(m => m.id === parseInt(matchId));
+      fillForm(scanResult, existing);
+    } else {
+      fillForm(scanResult, null);
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
   function formatTime(t) {
     const [h, m] = t.split(':').map(Number);
     return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
@@ -365,9 +681,9 @@
 
   function dayAbbrevs(days) {
     const d = days.split(',').map(Number);
-    if (d.length === 7) return 'Every day';
+    if (d.length === 7)                                return 'Every day';
     if (JSON.stringify(d) === JSON.stringify([0,1,2,3,4])) return 'Weekdays';
-    if (JSON.stringify(d) === JSON.stringify([5,6])) return 'Weekends';
+    if (JSON.stringify(d) === JSON.stringify([5,6]))        return 'Weekends';
     return d.map(i => DAYS[i]).join(', ');
   }
 
@@ -380,7 +696,7 @@
       container.innerHTML = `
         <div class="empty-state">
           <div class="icon">💊</div>
-          <p>No medications yet. Add your first one!</p>
+          <p>No medications yet. Scan a bottle or add one manually.</p>
         </div>`;
       return;
     }
@@ -392,23 +708,25 @@
           <div class="med-card-info">
             <div class="med-card-name">${m.name}</div>
             ${m.dosage ? `<div class="med-card-dosage">${m.dosage}</div>` : ''}
-            ${m.notes ? `<div class="med-card-notes">${m.notes}</div>` : ''}
+            ${m.ndc    ? `<div class="med-card-ndc">NDC: ${m.ndc}</div>`  : ''}
+            ${m.notes  ? `<div class="med-card-notes">${m.notes}</div>`   : ''}
           </div>
         </div>
         <div class="med-card-schedules">
-          ${m.schedules.length ? m.schedules.map(s => `
-            <div class="sched-pill">
-              <span>⏰</span>
-              ${formatTime(s.time_of_day)} · ${dayAbbrevs(s.days_of_week)}
-              ${s.label ? `· ${s.label}` : ''}
-            </div>`).join('') : '<span style="color:var(--muted);font-size:0.8rem;">No reminders set</span>'}
+          ${m.schedules.length
+            ? m.schedules.map(s => `
+                <div class="sched-pill">
+                  <span>⏰</span>
+                  ${formatTime(s.time_of_day)} · ${dayAbbrevs(s.days_of_week)}
+                  ${s.label ? `· ${s.label}` : ''}
+                </div>`).join('')
+            : '<span style="color:var(--muted);font-size:0.8rem;">No reminders set</span>'}
         </div>
         <div class="med-card-actions">
           <button class="btn btn-outline" onclick='editMed(${JSON.stringify(m)})'>Edit</button>
-          <button class="btn btn-danger" onclick="promptDelete(${m.id})">Remove</button>
+          <button class="btn btn-danger"  onclick="promptDelete(${m.id})">Remove</button>
         </div>
-      </div>
-    `).join('')}</div>`;
+      </div>`).join('')}</div>`;
   }
 
   initColorSwatches('#7BAF8E');
