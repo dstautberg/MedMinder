@@ -55,7 +55,7 @@ dose_log    (id, schedule_id, user_id, med_id, taken_at, scheduled_date, status)
 
 ## Quick start
 
-### 1. Set up Google OAuth (same as original)
+### 1. Set up Google OAuth
 
 - Google Cloud Console → APIs & Services → Credentials → OAuth client ID
 - Redirect URI: `http://localhost:5000/authorized`
