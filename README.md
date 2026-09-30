@@ -81,7 +81,8 @@ Open http://localhost:5000 — sign in with Google, add your medications!
 
 ## Extending
 
+- **PWA / push notifications**: add a service worker and Web Push to send browser notifications at scheduled times
 - **Email/SMS reminders**: integrate SendGrid or Twilio; add a background scheduler (APScheduler) to fire based on `schedules` table rows
 - **Multiple profiles**: add a `profile_id` foreign key to medications to let one account track meds for family members
 - **PostgreSQL**: swap `sqlite3` calls for SQLAlchemy with a Postgres URL for production
-- **PWA / push notifications**: add a service worker and Web Push to send browser notifications at scheduled times
+- 
