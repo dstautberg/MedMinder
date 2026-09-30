@@ -277,7 +277,7 @@
           ? `Taken at ${formatTime(new Date(d.taken_at + 'Z').toTimeString().slice(0,5))}`
           : timeStr;
         html += `
-          <div class="dose-card ${d.taken ? 'taken' : ''}" onclick="toggleDose(${d.id}, '${new Date().toISOString().slice(0,10)}', this)">
+          <div class="dose-card ${d.taken ? 'taken' : ''}" data-scheduled-time="${d.time_of_day}" onclick="toggleDose(${d.id}, '${new Date().toISOString().slice(0,10)}', this)">
             <div class="dose-check">${d.taken ? '✓' : ''}</div>
             <div class="dose-color-bar" style="background:${d.color}"></div>
             <div class="dose-info">
@@ -310,7 +310,7 @@
     } else {
       cardEl.classList.remove('taken');
       check.textContent = '';
-      // restore scheduled time
+      badge.textContent = formatTime(cardEl.dataset.scheduledTime);
       showToast('Dose unmarked');
     }
     loadStats();
